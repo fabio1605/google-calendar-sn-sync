@@ -1,0 +1,6 @@
+vendor/
+.env
+*.key
+*.pem
+.idea/
+node_modules/

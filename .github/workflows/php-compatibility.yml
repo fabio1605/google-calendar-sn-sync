@@ -1,0 +1,49 @@
+name: Plugin PHP Compatibility & PHPUnit Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        php: ['7.4', '8.0', '8.1', '8.2']
+
+    name: PHP ${{ matrix.php }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools: composer, phpunit
+
+      - name: Install dependencies
+        run: |
+          composer require --dev \
+            squizlabs/php_codesniffer:"^3.7" \
+            phpcompatibility/php-compatibility:"^9.3" \
+            phpunit/phpunit:"^9.5"
+
+      - name: Configure PHPCS
+        run: |
+          vendor/bin/phpcs --config-set installed_paths vendor/phpcompatibility/php-compatibility
+
+      - name: Run PHPCompatibility checks
+        run: |
+          vendor/bin/phpcs . \
+            --standard=PHPCompatibility \
+            --runtime-set testVersion ${{ matrix.php }} \
+            --ignore=vendor
+
+      - name: Run PHPUnit tests
+        run: |
+          vendor/bin/phpunit
