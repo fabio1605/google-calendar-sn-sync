@@ -1,0 +1,24 @@
+{
+  "name": "fabio/google-calendar-sn-sync",
+  "description": "Google Calendar SN Sync Plugin",
+  "require": {
+    "php": "^7.4 || ^8.0",
+    "google/apiclient": "2.4.*",
+    "google/auth": "1.3.*",
+    "monolog/monolog": "^2.0",
+    "psr/log": "^1.1"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.5"
+  },
+  "autoload": {
+    "psr-4": {
+      "Fabio\\GoogleCalendarSync\\": "includes/"
+    }
+  },
+  "config": {
+    "platform": {
+      "php": "7.4.30"
+    }
+  }
+}
