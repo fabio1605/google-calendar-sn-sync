@@ -3,29 +3,61 @@
 
 
 
+
+// === Geocode helper function ===
+function gcsn_geocode_location_old($address) {
+    $api_key = 'AIzaSyDldQiRt6hZmJb1OEVc8WfNxPvVWq9VpDg'; // Your API Key
+    $address = urlencode($address);
+    $url = "https://maps.googleapis.com/maps/api/geocode/json?address={$address}&key={$api_key}";
+
+    $response = wp_remote_get($url);
+
+    if (is_wp_error($response)) {
+        return null;
+    }
+
+    $body = wp_remote_retrieve_body($response);
+    $data = json_decode($body, true);
+
+    if (!empty($data['results'][0]['geometry']['location'])) {
+        return [
+            'lat' => $data['results'][0]['geometry']['location']['lat'],
+            'lng' => $data['results'][0]['geometry']['location']['lng'],
+        ];
+    }
+
+    return null;
+}
+
 function gcsn_geocode_location($address) {
-	
-	$api_key = 'AIzaSyDldQiRt6hZmJb1OEVc8WfNxPvVWq9VpDg';
-    $cache_key = 'gcsn_geo_' . md5($address);
-    $cached = get_transient($cache_key);
-    if ($cached) return $cached;
+    $server_url = 'https://plugin.fabiophotography.co.uk/geocode.php';
 
-    $api_key = 'AIzaSyDldQiRt6hZmJb1OEVc8WfNxPvVWq9VpDg';
-    $url = 'https://maps.googleapis.com/maps/api/geocode/json?' . http_build_query([
-        'address' => $address,
-        'key' => $api_key
-    ]);
+    // Base64-encoded API key (decoded just before use)
+    $encoded_key = 'RDdmOEE5MnNLeDFQcU00Tnc1QnZaM0x0WXFIczlKZFhjVmU2VG1ScExnUWhBejJVc1d5Qm5LclZjWHBRc01hWnQ=';
+    $api_key = base64_decode($encoded_key);
 
-    $res = wp_remote_get($url);
-    if (is_wp_error($res)) return null;
+    // Build request URL
+    $url = $server_url . '?address=' . urlencode($address) . '&api_key=' . urlencode($api_key);
 
-    $body = json_decode(wp_remote_retrieve_body($res), true);
-    if (!isset($body['results'][0]['geometry']['location'])) return null;
+    // Make the request
+    $response = wp_remote_get($url);
 
-    $location = $body['results'][0]['geometry']['location'];
-    set_transient($cache_key, $location, WEEK_IN_SECONDS);
+    if (is_wp_error($response)) {
+        return null;
+    }
 
-    return $location;
+    $body = wp_remote_retrieve_body($response);
+    $data = json_decode($body, true);
+
+    if (!empty($data['lat']) && !empty($data['lng'])) {
+        return [
+            'lat' => $data['lat'],
+            'lng' => $data['lng'],
+            'postcode' => $data['postcode'] ?? null,
+        ];
+    }
+
+    return null;
 }
 
 
@@ -93,24 +125,26 @@ function gcsn_render_map_data_js() {
     $map_lng = $origin_coords['lng'] ?? -1.8116;
 
     $table = $wpdb->prefix . 'sn_calendar_events';
-    $events = $wpdb->get_results("SELECT title, start_date, location, distance_miles, travel_time_minutes FROM $table WHERE location IS NOT NULL AND location != ''");
+    $events = $wpdb->get_results("SELECT title, start_date, location, distance_miles, travel_time_minutes, latitude, longitude FROM $table WHERE location IS NOT NULL AND location != '' AND latitude IS NOT NULL AND longitude IS NOT NULL");
+
 
     $marker_data = [];
 
-    foreach ($events as $e) {
-        $geo = gcsn_geocode_location($e->location);
-        if (!$geo) continue;
 
-        $marker_data[] = [
-            'title'     => $e->title,
-            'date'      => $e->start_date,
-            'location'  => $e->location,
-            'distance'  => $e->distance_miles,
-            'time'      => $e->travel_time_minutes,
-            'lat'       => $geo['lat'],
-            'lng'       => $geo['lng'],
-        ];
-    }
+
+     
+
+        foreach ($events as $e) {
+            $marker_data[] = [
+                'title'     => $e->title,
+                'date'      => $e->start_date,
+                'location'  => $e->location,
+                'distance'  => $e->distance_miles,
+                'time'      => $e->travel_time_minutes,
+                'lat'       => $e->latitude,
+                'lng'       => $e->longitude,
+            ];
+        }
 
     echo 'const gcsnMarkers = ' . json_encode($marker_data) . ';';
 	

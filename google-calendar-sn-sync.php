@@ -6,6 +6,9 @@ Version: 1.0
 Author: Fabio Photography
 */
 
+error_reporting(E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED & ~E_NOTICE & ~E_WARNING);
+@ini_set('display_errors', 0);
+
 require_once __DIR__ . '/vendor/autoload.php';
 
 
@@ -23,7 +26,7 @@ require_once __DIR__ . '/includes/datecheck.php';
 require_once __DIR__ . '/includes/oauth.php';
 require_once __DIR__ . '/includes/helper.php';
 require_once __DIR__ . '/includes/Map.php';
-
+require_once __DIR__ . '/includes/Upgrade.php';
 
 if (interface_exists(\Psr\Log\LoggerInterface::class)) {
     $r = new \ReflectionMethod(\Psr\Log\LoggerInterface::class, 'emergency');

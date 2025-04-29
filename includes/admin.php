@@ -11,7 +11,9 @@ function gcsn_render_admin_page() {
     $table = $wpdb->prefix . 'sn_calendar_events';
 	
 
-	 if (isset($_POST['gcsn_manual_sync'])) {	 }
+	 if (isset($_POST['gcsn_manual_sync'])) {	
+       gcsn_sync_events();
+      }
 		
 		if (isset($_POST['gcsn_recalc_distances'])) {
 			
@@ -296,7 +298,7 @@ echo '</div>';
 echo '<span><strong>' . count($events) . '</strong> events shown</span>';
 
    
-        gcsn_sync_events();
+        
         echo '<p><strong>Manual sync completed.</strong></p>';
 		
 	

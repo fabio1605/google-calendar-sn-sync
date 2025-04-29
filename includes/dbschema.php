@@ -52,6 +52,7 @@ function gcsn_create_token_table() {
 register_activation_hook(__FILE__, 'gcsn_create_token_table');
 
 
+
 register_activation_hook(__FILE__, 'gcsn_create_table');
 function gcsn_create_table() {
     global $wpdb;
@@ -67,6 +68,8 @@ function gcsn_create_table() {
         description TEXT,
         distance_miles FLOAT NULL,
         travel_time_minutes INT NULL,
+        latitude DOUBLE NULL,
+        longitude DOUBLE NULL,
         last_synced DATETIME DEFAULT CURRENT_TIMESTAMP
     ) $charset_collate;";
 
