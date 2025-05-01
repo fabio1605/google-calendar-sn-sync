@@ -208,7 +208,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     echo '<div class="wrap">';
     echo '<h1>SN Calendar Sync</h1>';
-	$api_key = 'AIzaSyDldQiRt6hZmJb1OEVc8WfNxPvVWq9VpDg';
+	$api_key = get_option('gcsn_google_maps_api_key');
 $calendar_id = get_option('gcsn_calendar_id');
 
 if (empty($api_key) || empty($calendar_id)) {
@@ -217,7 +217,7 @@ if (empty($api_key) || empty($calendar_id)) {
     echo '<p><strong>Plugin setup incomplete.</strong></p><ul style="margin-left: 20px;">';
 
     if (empty($api_key)) {
-        echo '<li>❌ Google Maps API key is missing</li>';
+        echo '<li>❌ Google Maps API key is missing - Maps & Distance calculations will not work without it</li>';
     } else {
         echo '<li>✅ Google Maps API key is set</li>';
     }
@@ -328,13 +328,9 @@ echo '<span><strong>' . count($events) . '</strong> events shown</span>';
     <tbody>';
 
  foreach ($events as $event) {
-    $distance = null;
-    $duration = null;
+   
 
-    if (!empty($event->location)) {
-        list($distance, $duration) = gcsn_get_distance_info($event->location, $event->event_id);
-    }
-
+   
       $date = DateTime::createFromFormat('Y-m-d', $event->start_date);
     $dayOfWeek = $date ? (int) $date->format('N') : 0; // 1 = Monday, 7 = Sunday
     $isWeekday = $dayOfWeek >= 1 && $dayOfWeek <= 5;
@@ -345,8 +341,8 @@ echo '<span><strong>' . count($events) . '</strong> events shown</span>';
     echo '<td>' . esc_html($event->title) . '</td>';
     echo '<td>' . esc_html($event->start_date) . '</td>';
     echo '<td>' . esc_html($event->location) . '</td>';
-    echo '<td>' . ($distance !== null ? esc_html($distance) . ' mi' : '-') . '</td>';
-    echo '<td>' . ($duration !== null ? esc_html($duration) . ' min' : '-') . '</td>';
+    echo '<td>' . esc_html($event->distance_miles) . ' mi</td>';
+    echo '<td>' . esc_html($event->travel_time_minutes) . ' min</td>';
  echo '<td><div class="gcsn-description" onclick="this.classList.toggle(\'expanded\')">' . wp_kses_post($event->description) . '</div></td>';
 
     echo '</tr>';

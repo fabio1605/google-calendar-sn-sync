@@ -2,14 +2,22 @@
 
 
 function gcsn_sync_events() {
+
+    set_time_limit(600); // Allow up to 10 minutes
+ignore_user_abort(true); // Let it continue even if user closes browser
+
+
     global $wpdb;
+
+    error_log( 'GCSN Sync started at ' . date('Y-m-d H:i:s') );
 
     // Get access token from the plugin's token table
     $current_user = wp_get_current_user();
-    $token_row = $wpdb->get_row($wpdb->prepare(
-        "SELECT * FROM {$wpdb->prefix}gcsn_tokens WHERE user_email = %s",
-        $current_user->user_email
-    ));
+    $token_row = $wpdb->get_row("
+    SELECT * FROM {$wpdb->prefix}gcsn_tokens
+    ORDER BY created_at DESC
+    LIMIT 1
+");
 
     if (!$token_row || empty($token_row->access_token)) {
         error_log("❌ No access token found — user is not connected to Google.");
@@ -64,9 +72,9 @@ function gcsn_sync_events() {
                 'created_at' => current_time('mysql')
             ], ['user_email' => $current_user->user_email]);
 
-            error_log("✅ Token refreshed via fabiophotography.co.uk!");
+            error_log("✅ Token refreshed ");
         } else {
-            error_log("❌ Token refresh response invalid: " . wp_remote_retrieve_body($response));
+            error_log("❌ Token refresh " . wp_remote_retrieve_body($response));
             return;
         }
     }
@@ -118,21 +126,30 @@ function gcsn_sync_events() {
         $longitude = null;
     
         // If location exists...
+        $distance = null;
+        $duration = null;
+        
         if (!empty($location)) {
             if ($existing && $existing->latitude !== null && $existing->longitude !== null) {
-                // Use existing lat/lng from DB
                 $latitude = $existing->latitude;
                 $longitude = $existing->longitude;
+        
+                // Only calculate if distance was never set
+                if ($existing->distance_miles === null || $existing->travel_time_minutes === null) {
+                    list($distance, $duration) = gcsn_get_distance_info($location, $event_id);
+                }
             } else {
-                // Otherwise, geocode it
                 $geo_result = gcsn_geocode_location($location);
                 if ($geo_result) {
                     $latitude = $geo_result['lat'];
                     $longitude = $geo_result['lng'];
+        
+                    // ✅ Trigger distance lookup after geocoding
+                    list($distance, $duration) = gcsn_get_distance_info($location, $event_id);
+                    sleep(1);
                 }
             }
         }
-
         $existing = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}sn_calendar_events WHERE event_id = %s", $event_id));
 
         if ($existing) {
@@ -166,7 +183,9 @@ function gcsn_sync_events() {
                 'description' => $description,
                 'last_synced' => current_time('mysql'),
                 'latitude' => $latitude,
-                'longitude' => $longitude
+                'longitude' => $longitude,
+                'distance_miles' => $distance,
+                'travel_time_minutes'=>$duration
             ]);
         }
         
@@ -196,7 +215,7 @@ function gcsn_get_distance_info($destination, $event_id) {
     if ($row && $row->distance_miles !== null && $row->travel_time_minutes !== null) {
         return [round($row->distance_miles, 1), $row->travel_time_minutes];
     }
-$api_key = 'AIzaSyDldQiRt6hZmJb1OEVc8WfNxPvVWq9VpDg';
+    $api_key = get_option('gcsn_google_maps_api_key');
     
    $origin_latlng = get_option('gcsn_origin_location');
 

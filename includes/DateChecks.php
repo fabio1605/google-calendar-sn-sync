@@ -33,9 +33,13 @@ function gcsn_render_date_checks_page() {
     $page = isset($_GET['paged']) ? max(1, intval($_GET['paged'])) : 1;
     $offset = ($page - 1) * $per_page;
 
-    // Get total count
-    $total = $wpdb->get_var("SELECT COUNT(*) FROM $table $where_sql", $params);
-
+    if (!empty($params)) {
+        $sql = $wpdb->prepare("SELECT COUNT(*) FROM $table $where_sql", $params);
+    } else {
+        $sql = "SELECT COUNT(*) FROM $table $where_sql";
+    }
+    
+    $total = $wpdb->get_var($sql);
     // Get actual records
     $query = $wpdb->prepare(
         "SELECT * FROM $table $where_sql ORDER BY created_at DESC LIMIT %d OFFSET %d",

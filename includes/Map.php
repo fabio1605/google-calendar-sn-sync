@@ -5,8 +5,8 @@
 
 
 // === Geocode helper function ===
-function gcsn_geocode_location_old($address) {
-    $api_key = 'AIzaSyDldQiRt6hZmJb1OEVc8WfNxPvVWq9VpDg'; // Your API Key
+function gcsn_geocode_location($address) {
+    $api_key = get_option('gcsn_google_maps_api_key');
     $address = urlencode($address);
     $url = "https://maps.googleapis.com/maps/api/geocode/json?address={$address}&key={$api_key}";
 
@@ -29,7 +29,7 @@ function gcsn_geocode_location_old($address) {
     return null;
 }
 
-function gcsn_geocode_location($address) {
+function gcsn_geocode_location_new($address) {
     $server_url = 'https://plugin.fabiophotography.co.uk/geocode.php';
 
     // Base64-encoded API key (decoded just before use)
@@ -62,10 +62,18 @@ function gcsn_geocode_location($address) {
 
 
 function gcsn_render_map_admin_page() {
-    $api_key = 'AIzaSyDldQiRt6hZmJb1OEVc8WfNxPvVWq9VpDg';
-
+    $api_key = get_option('gcsn_google_maps_api_key');
     echo '<div class="wrap">';
     echo '<h1>Event Map</h1>';
+    
+    if (empty($api_key)) {
+        echo '<div style="padding: 20px; background: #fff3cd; border-left: 5px solid #ffeeba; margin-top: 20px;">';
+        echo '<p><strong>⚠️ Google Maps API Key Not Set</strong></p>';
+        echo '<p>You must <a href="' . esc_url(admin_url('admin.php?page=gcsn-settings')) . '">enter your Google Maps API key in the plugin settings</a> to enable the map view.</p>';
+        echo '</div>';
+        echo '</div>'; // end wrap
+        return;
+    }
 	
 	?>
 	

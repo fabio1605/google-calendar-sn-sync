@@ -13,6 +13,15 @@ delete_option('gcsn_calendar_id');
     echo '<div class="notice notice-warning"><p>Google connection removed. You are now disconnected.</p></div>';
 }
 	
+if (isset($_POST['gcsn_settings_save'])) {
+    update_option('gcsn_google_maps_api_key', sanitize_text_field($_POST['gcsn_google_maps_api_key']));
+    update_option('gcsn_origin_location', sanitize_text_field($_POST['gcsn_origin_location']));
+    update_option('gcsn_calendar_id', sanitize_text_field($_POST['gcsn_calendar_id']));
+    echo '<div class="notice notice-success"><p>Settings saved.</p></div>';
+}
+
+
+
 	if (isset($_POST['gcsn_availability_save'])) {
     update_option('gcsn_available_message', sanitize_text_field($_POST['gcsn_available_message']));
     update_option('gcsn_unavailable_message', sanitize_text_field($_POST['gcsn_unavailable_message']));
@@ -247,8 +256,37 @@ echo '<tr><th scope="row"><label for="gcsn_origin_location">Enter your home post
 echo '<td><input type="text" id="gcsn_origin_location" name="gcsn_origin_location" value="' . esc_attr($origin) . '" class="regular-text" /></td></tr>';
 
 // Google Maps API Key
-//echo '<tr><th scope="row"><label for="gcsn_google_maps_api_key">Google Maps API Key</label></th>';
-//echo '<td><input type="text" id="gcsn_google_maps_api_key" name="gcsn_google_maps_api_key" value="' . esc_attr($maps_api) . '" class="regular-text" /></td></tr>';
+echo '<tr><th scope="row"><label for="gcsn_google_maps_api_key">Google Maps API Key</label></th>';
+echo '<td><input type="text" id="gcsn_google_maps_api_key" name="gcsn_google_maps_api_key" value="' . esc_attr($maps_api) . '" class="regular-text" />';
+echo '<p class="description">Used for Google Maps Distance Matrix and Geocoding API calls.</p>';
+
+echo '<div style="margin-top: 8px; padding: 10px; background: #f8f8f8; border-left: 4px solid #007cba;">';
+echo '<p style="margin: 0 0 6px;"><strong>Need help getting your API key?</strong></p>';
+echo '<ol style="margin-left: 1em; padding-left: 1em;">';
+echo '<li>Go to the <a href="https://console.cloud.google.com/" target="_blank" rel="noopener noreferrer">Google Cloud Console</a>.</li>';
+echo '<li>Create or select a project.</li>';
+echo '<li>Set up <strong>billing</strong> for your project – this is required by Google, even for free usage.<br>
+You’ll need to add a debit or credit card for identity verification, but you won’t be charged under normal use.</li>';
+echo '<li>Navigate to <strong>APIs & Services &rarr; Library</strong>.</li>';
+echo '<li>Enable the following APIs:
+    <ul style="margin-top: 4px;">
+        <li><code>Distance Matrix API</code></li>
+        <li><code>Geocoding API</code></li>
+        <li><code>Maps JavaScript API</code> (for frontend map display)</li>
+        <li><code>Maps Static API</code> (optional, for static maps)</li>
+    </ul>
+</li>';
+echo '<li>Go to <strong>APIs & Services &rarr; Credentials</strong>.</li>';
+echo '<li>Click “Create Credentials” → “API Key”.</li>';
+echo '<li>Copy the key and paste it in the field above.</li>';
+echo '<li><strong>Optional:</strong> Restrict the key to certain APIs or websites for security.</li>';
+echo '</ol>';
+echo '<p style="margin-top: 10px;"><strong>Good to know:</strong> Google offers a free usage tier every month that covers thousands of map and location lookups — enough for most small/medium websites.</p>';
+echo '<p style="margin-top: 6px;">Prefer a video walkthrough? <a href="https://www.youtube.com/watch?v=oXVV9gcFDxA" target="_blank" rel="noopener noreferrer">Watch the tutorial here &rarr;</a></p>';
+echo '</div>';
+
+echo '</td></tr>';
+
 
 
     echo '</table>';
@@ -287,6 +325,9 @@ echo '</table>';
 
 echo '<p><input type="submit" name="gcsn_availability_save" class="button button-primary" value="Save Messages"></p>';
 echo '</form>';
+
+// Google Maps API Key
+
 
 echo '<div style="margin-top: 30px; padding: 15px; background: #e8f5e9; border-left: 5px solid #46b450;">';
 echo '<h3>📋 How to Use the Shortcode</h3>';
